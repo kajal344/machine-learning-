@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-powered personalized diet planning tool">
+    <title>Health & Diet Planner</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --primary-dark: #1b5e20;
+            --primary-light: #a5d6a7;
+            --background: #e8f5e9;
+            --surface: #ffffff;
+            --error: #d32f2f;
+            --text-primary: #2e7d32;
+            --text-secondary: #238c47;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .main-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 1rem;
+            flex-wrap: wrap;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .form-container, .diet-container {
+            background-color: var(--surface);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 1rem;
+            width: 100%;
+            transition: transform 0.3s ease;
+        }
+
+        @media (min-width: 992px) {
+            .form-container, .diet-container {
+                width: calc(50% - 2rem);
+            }
+        }
+
+        h2 {
+            color: var(--text-secondary);
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1.25rem;
+            border: 1px solid var(--primary-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.2);
+        }
+
+        button, input[type="submit"] {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        button:hover, input[type="submit"]:hover {
+            background-color: var(--primary-dark);
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        #generatedDietPlan {
+            padding: 1.5rem;
+            background-color: var(--surface);
+            border-radius: 8px;
+            border: 1px solid var(--primary-light);
+            min-height: 300px;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .error {
+            color: var(--error);
+            text-align: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-group button {
+            flex: 1;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        [tabindex]:focus-visible {
+            outline: 2px solid var(--primary-dark);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Health & Diet Planner</h1>
+        <p class="sr-only">AI-powered personalized diet planning tool</p>
+    </header>
+
+    <main class="main-container">
+        <section class="form-container" aria-labelledby="form-heading">
+            <h2 id="form-heading">Enter Your Details</h2>
+            <form id="healthDietForm" aria-live="polite">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required aria-required="true">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required aria-required="true">
+                </div>
+
+                <div class="form-group">
+                    <label for="age">Age</label>
+                    <input type="number" id="age" name="age" min="1" max="120" required aria-required="true">
+                </div>
+
+                <div class="form-group">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender" required aria-required="true">
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                        <option value="prefer-not-to-say">Prefer not to say</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="weight">Weight (kg)</label>
+                    <input type="number" id="weight" name="weight" min="20" max="300" step="0.1" required aria-required="true">
+                </div>
+
+                <div class="form-group">
+                    <label for="height">Height (cm)</label>
+                    <input type="number" id="height" name="height" min="100" max="250" required aria-required="true">
+                </div>
+
+                <div class="form-group">
+                    <label for="activityLevel">Activity Level</label>
+                    <select id="activityLevel" name="activityLevel" required aria-required="true">
+                        <option value="">Select Activity Level</option>
+                        <option value="sedentary">Sedentary (Little to no exercise)</option>
+                        <option value="lightly_active">Lightly Active (1-3 days/week)</option>
+                        <option value="moderately_active">Moderately Active (3-5 days/week)</option>
+                        <option value="very_active">Very Active (6-7 days/week)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="dietPreference">Diet Preference</label>
+                    <select id="dietPreference" name="dietPreference" required aria-required="true">
+                        <option value="">Select Diet Type</option>
+                        <option value="vegetarian">Vegetarian</option>
+                        <option value="non-vegetarian">Non-Vegetarian</option>
+                        <option value="vegan">Vegan</option>
+                        <option value="keto">Keto</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="healthGoal">Health Goal</label>
+                    <textarea id="healthGoal" name="healthGoal" rows="3" required aria-required="true"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="existingHealthConditions">Existing Health Conditions (if any)</label>
+                    <textarea id="existingHealthConditions" name="existingHealthConditions" rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="allergies">Allergies (if any)</label>
+                    <textarea id="allergies" name="allergies" rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="preferredCuisine">Preferred Cuisine</label>
+                    <input type="text" id="preferredCuisine" name="preferredCuisine">
+                </div>
+
+                <input type="submit" value="Generate Diet Plan" aria-label="Generate personalized diet plan">
+            </form>
+        </section>
+
+        <section class="diet-container" aria-labelledby="diet-heading">
+            <h2 id="diet-heading">Your Personalized Diet Plan</h2>
+            <div id="generatedDietPlan" role="status" aria-live="polite">
+                <p class="loading">Your personalized diet plan will appear here after submission.</p>
+            </div>
+
+            <div class="btn-group">
+                <button id="copyDietButton" class="btn-small" disabled aria-label="Copy diet plan to clipboard">
+                    Copy Plan
+                </button>
+                <button id="sendDietButton" class="btn-small" disabled aria-label="Send diet plan to email">
+                    Download Plan
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('healthDietForm');
+            const dietPlanContainer = document.getElementById('generatedDietPlan');
+            const copyButton = document.getElementById('copyDietButton');
+            const sendButton = document.getElementById('sendDietButton');
+            let currentPlan = '';
+
+            // Sanitize HTML output
+            const sanitizeHTML = (str) => {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            };
+
+            // Handle form submission
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                
+                const submitButton = form.querySelector('[type="submit"]');
+                submitButton.disabled = true;
+                dietPlanContainer.innerHTML = '<p class="loading">Generating your personalized diet plan...</p>';
+                copyButton.disabled = true;
+                sendButton.disabled = true;
+
+                try {
+                    const formData = new FormData(form);
+                    const response = await fetch('/generate-diet-plan', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify(Object.fromEntries(formData)),
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || `Server returned ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    if (result.data && result.data.plan) {
+                        currentPlan = result.data.plan;
+                        dietPlanContainer.innerHTML = sanitizeHTML(currentPlan);
+                        copyButton.disabled = false;
+                        sendButton.disabled = false;
+                    } else {
+                        throw new Error('No diet plan was generated');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    dietPlanContainer.innerHTML = `<p class="error">Error: ${sanitizeHTML(error.message)}</p>`;
+                } finally {
+                    submitButton.disabled = false;
+                }
+            });
+
+            // Copy to clipboard
+            copyButton.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(currentPlan);
+                    alert('Diet plan copied to clipboard!');
+                } catch (err) {
+                    alert('Failed to copy diet plan. Please try again.');
+                }
+            });
+
+            sendButton.addEventListener('click', () => {
+    const email = document.getElementById('email').value;
+    const name = document.getElementById('name').value;
+    
+    if (!email) {
+        alert('Please enter your email address first');
+        return;
+    }
+    
+    if (!currentPlan) {
+        alert('Please generate a valid diet plan first');
+        return;
+    }
+    
+    const subject = `Personalized Diet Plan for ${name}`;
+    const body = `Hello ${name},\n\nHere is your personalized diet plan:\n\n${currentPlan}`;
+    
+    // Create a Blob with the diet plan data
+    const blob = new Blob([currentPlan], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+
+    // Create a download link and simulate a click
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${name}_diet_plan.txt`; // File name with user name
+    document.body.appendChild(link);
+    link.click();
+    
+    // Clean up
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+});
+
+            // Initialize form validation
+            form.addEventListener('input', () => {
+                const isValid = form.checkValidity();
+                form.querySelector('[type="submit"]').disabled = !isValid;
+            });
+        });
+    </script>
+</body>
+</html>
